@@ -5,12 +5,16 @@
   "main": "index.mjs",
   "scripts": {
     "start": "forever start index.mjs -p",
-    "dev": "node index.mjs",
+    "stop": "killall -SIGINT webaverse || true",
+    "dev": "node index.mjs --name=webaverse",
+    "prerestart": "npm run stop",
+    "restart": "npm run dev",
     "prod": "sudo $(which node) index.mjs -p",
     "build": "vite build",
     "serve": "vite preview",
     "setup:test": "cd test && npm i",
-    "test": "cd test && npm run test"
+    "test": "cd test && npm run test",
+    "watch": "watch 'npm run restart' ./packages/totum"
   },
   "dependencies": {
     "@3id/connect": "^0.2.5",
