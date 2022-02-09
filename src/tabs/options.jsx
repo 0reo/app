@@ -7,8 +7,8 @@ import game from '../../game.js';
 import {defaultVoicePack, voiceEndpoint} from '../../constants.js';
 
 export const Options = ({app, open, toggleOpen, panelsRef}) => {
-  const [avatarStyle, setAvatarStyle] = useState(4);
-  const [avatarStyleCurrent, setAvatarStyleCurrent] = useState(4);
+  const [avatarStyle, setAvatarStyle] = useState(parseInt(localStorage.getItem('avatarStyle')) || 4);
+  const [avatarStyleCurrent, setAvatarStyleCurrent] = useState(parseInt(localStorage.getItem('avatarStyle')) || 4);
   const [voicePacks, setVoicePacks] = useState([]);
   const [voicePack, setVoicePack] = useState('0');
   const [voicePackCurrent, setVoicePackCurrent] = useState(voicePack);
@@ -80,6 +80,7 @@ export const Options = ({app, open, toggleOpen, panelsRef}) => {
           {(avatarStyle !== avatarStyleCurrent) ? (
             <button className={classnames(styles.big, styles['mint-button'])} onClick={e => {
               game.setAvatarQuality(avatarStyle);
+              localStorage.setItem('avatarStyle', avatarStyle);
               setAvatarStyleCurrent(avatarStyle);
             }}>
               <div className={styles['button-background']} />

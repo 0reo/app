@@ -78,10 +78,18 @@ export function makeAvatar(app) {
         debug: false,
       });
       avatar[appSymbol] = app;
-      
-      const am = metaversefile.useLocalPlayer().appManager;
-      const trackedApp = am.getTrackedApp(app.instanceId);
-      avatar.setQuality(1);
+
+      const quality = parseInt(localStorage.getItem('avatarStyle')) || 4;
+      if (quality > 1){
+        const am = metaversefile.useLocalPlayer().appManager;
+        const trackedApp = am.getTrackedApp(app.instanceId);
+        trackedApp.set('load', true);
+        // console.log("APPADD CALLED", trackedApp);
+      } else {
+        avatar.setQuality(1);
+      }
+      console.log("MADE AVATAR");
+
       unFrustumCull(app);
       enableShadows(app);
 
