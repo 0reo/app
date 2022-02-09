@@ -166,6 +166,9 @@ class StatePlayer extends PlayerBase {
       appsMap: null,
     });
     this.appManager.addEventListener('appadd', e => {
+      const trackedApp = this.appManager.getTrackedApp( e.data.instanceId);
+      const load = trackedApp.get('load');
+      if(!load) return;
       const app = e.data;
       scene.add(app);
     });
@@ -724,10 +727,11 @@ class LocalPlayer extends UninterpolatedPlayer {
     this.characterHups = new CharacterHups(this);
     this.characterSfx = new CharacterSfx(this);
     this.characterFx = new CharacterFx(this);
+    this.loaded = false;
   }
   async setAvatarUrl(u) {
     const localAvatarEpoch = ++this.avatarEpoch;
-    const avatarApp = await this.appManager.addTrackedApp(u);
+    const avatarApp = await this.appManager.addTrackedApp(u, undefined, undefined, undefined, undefined, false);
     if (this.avatarEpoch !== localAvatarEpoch) {
       this.appManager.removeTrackedApp(avatarApp.instanceId);
       return;
@@ -740,7 +744,7 @@ class LocalPlayer extends UninterpolatedPlayer {
     this.playersArray.doc.transact(function tx() {
       const avatar = self.getAvatarState();
       const oldInstanceId = avatar.get('instanceId');
-      
+
       avatar.set('instanceId', app.instanceId);
 
       if (oldInstanceId) {

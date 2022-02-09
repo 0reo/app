@@ -7,6 +7,8 @@ import {unFrustumCull, enableShadows} from './util.js';
 import {
   getEyePosition,
 } from './avatars/util.mjs';
+import metaversefile from 'metaversefile';
+
 
 const appSymbol = 'app'; // Symbol('app');
 const avatarSymbol = 'avatar'; // Symbol('avatar');
@@ -77,9 +79,12 @@ export function makeAvatar(app) {
       });
       avatar[appSymbol] = app;
       
+      const am = metaversefile.useLocalPlayer().appManager;
+      const trackedApp = am.getTrackedApp(app.instanceId);
+      avatar.setQuality(1);
       unFrustumCull(app);
       enableShadows(app);
-      
+
       return avatar;
     }
   }
@@ -243,7 +248,7 @@ export function applyPlayerChatToAvatar(player, rig) {
     }
   };
   _applyChatEmote(lastMessage);
-  
+
   const _applyFakeSpeech = message => {
     rig.fakeSpeechValue = message?.fakeSpeech ? 1 : 0;
   };
@@ -268,9 +273,9 @@ export async function switchAvatar(oldAvatar, newApp) {
   if (newApp) {
     promises.push((async () => {
       await newApp.setSkinning(true);
-      
+
       // unwear old rig
-      
+
       if (!newApp[avatarSymbol]) {
         newApp[avatarSymbol] = makeAvatar(newApp);
       }
