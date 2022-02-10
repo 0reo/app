@@ -80,15 +80,26 @@ export function makeAvatar(app) {
       avatar[appSymbol] = app;
 
       const quality = parseInt(localStorage.getItem('avatarStyle')) || 4;
-      if (quality > 1){
+      avatar.setQuality(quality).then(()=>{
         const am = metaversefile.useLocalPlayer().appManager;
         const trackedApp = am.getTrackedApp(app.instanceId);
         trackedApp.set('load', true);
-        // console.log("APPADD CALLED", trackedApp);
-      } else {
-        avatar.setQuality(1);
-      }
-      console.log("MADE AVATAR");
+        console.log("PLAYER AVATAR", trackedApp.get('load'));
+      })
+/*
+       (async () => {
+         // await Avatar.waitForLoad();
+         avatar[appSymbol] = app;
+         await avatar.setQuality(quality);
+         const am = metaversefile.useLocalPlayer().appManager;
+         const trackedApp = am.getTrackedApp(app.instanceId);
+         console.log("PLAYER AVATAR", trackedApp, app.instanceId);
+         trackedApp.set('load', true);
+         unFrustumCull(app);
+         enableShadows(app);
+         console.log("ASYNC DONE");
+      })();
+*/
 
       unFrustumCull(app);
       enableShadows(app);
