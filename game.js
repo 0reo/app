@@ -1960,7 +1960,12 @@ const gameManager = {
   },
   setAvatarQuality(quality) {
     const localPlayer = metaversefileApi.useLocalPlayer();
+    const npcs = metaversefileApi.useNpcs()
     localPlayer.avatar.setQuality(quality);
+    npcs.forEach((npc) => {
+      npc.avatar.setQuality(quality);
+    });
+
   },
   playerDiorama: null,
   async bindPreviewCanvas(canvas) {

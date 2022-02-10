@@ -1096,10 +1096,13 @@ class NpcPlayer extends StaticUninterpolatedPlayer {
       visemes: true,
       debug: false,
     });
-  
+    console.log("MADE NPC AVATAR", avatar);
+    const quality = parseInt(localStorage.getItem('avatarStyle')) || 4;
+    avatar.setQuality(quality);
+
     unFrustumCull(app);
     enableShadows(app);
-  
+
     this.avatar = avatar;
 
     this.characterPhysics = new CharacterPhysics(this);
