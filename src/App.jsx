@@ -11,11 +11,21 @@ import Footer from './Footer.jsx';
 import Webaverse from '../webaverse.js';
 import * as universe from '../universe.js';
 import metaversefileApi from '../metaversefile-api.js';
+import { getGPUTier } from 'detect-gpu';
+
 const {useLocalPlayer} = metaversefileApi;
 
 import dropManager from '../drop-manager.js';
 
 const _startApp = async (weba, canvas) => {
+
+  const gpuTier = await getGPUTier();
+  console.log("GPU INFO", gpuTier);
+  if (!localStorage.getItem('avatarStyle')){
+    console.log("setting default quality to ", gpuTier.tier);
+    localStorage.setItem('avatarStyle', gpuTier.tier);
+  }
+
   weba.setContentLoaded();
 
   weba.bindInput();

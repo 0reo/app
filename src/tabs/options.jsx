@@ -7,8 +7,8 @@ import game from '../../game.js';
 import {defaultVoicePack, voiceEndpoint} from '../../constants.js';
 
 export const Options = ({app, open, toggleOpen, panelsRef}) => {
-  const [avatarStyle, setAvatarStyle] = useState(parseInt(localStorage.getItem('avatarStyle')) || 4);
-  const [avatarStyleCurrent, setAvatarStyleCurrent] = useState(parseInt(localStorage.getItem('avatarStyle')) || 4);
+  const [avatarStyle, setAvatarStyle] = useState(parseInt(localStorage.getItem('avatarStyle')));
+  const [avatarStyleCurrent, setAvatarStyleCurrent] = useState(parseInt(localStorage.getItem('avatarStyle')));
   const [voicePacks, setVoicePacks] = useState([]);
   const [voicePack, setVoicePack] = useState('0');
   const [voicePackCurrent, setVoicePackCurrent] = useState(voicePack);
