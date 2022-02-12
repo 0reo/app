@@ -1147,6 +1147,10 @@ class Avatar {
     })();
     this.model = model;
     this.options = options;
+    this.materials = {
+      toon:{},
+      basic:{}
+    };
     
     this.vrmExtension = object?.parser?.json?.extensions?.VRM;
     this.firstPersonCurves = getFirstPersonCurves(this.vrmExtension);
@@ -2108,7 +2112,72 @@ class Avatar {
     return localEuler.y;
   }
   async setQuality(quality) {
-    console.log("MODEL", this.spriteMegaAvatarMesh, this.object);
+    
+    const _swapMaterials = async (type) => {
+      
+      const _isToon = material => material[0] && material[0].isMToonMaterial;
+      const _isBasic = material => material.type == "MeshBasicMaterial" && material.name; //we're only changing named materials
+      const _setMaterial = (name, type, material) => this.materials[type][name] = material;
+
+      //make sure we have materials to work with
+      const empty = Object.keys(this.materials.toon).length == 0 &&
+        Object.keys(this.materials.basic).length == 0;
+        
+      if (empty){
+        this.model.traverse( ( object ) => {
+          if ( object.material && _isBasic(object.material)){
+            const name = object.material.name;
+            _setMaterial(name, 'basic', object.material);
+          } else if ( object.material && _isToon(object.material)) {
+            const name = object.material[0].name;
+            _setMaterial(name, 'toon', object.material[0]);
+        
+          }
+        
+        } );      
+      }
+      
+      //actually swap
+      switch (type) {
+        case "toon": {
+          let update = Object.keys(this.materials.toon).length > 0;
+          if(!update){
+            this.model.visable = false;
+            await this.object.toonShaderify(this.object);
+            this.model.visable = true;
+          } 
+
+          this.model.traverse( ( object ) => {
+            if ( object.material && _isBasic(object.material) ){
+                const name = object.material.name;
+                _setMaterial(name, 'basic', object.material);
+                update && (object.material = [this.materials.toon[name]]);
+              }
+            
+          } );          
+          break;
+          
+        }
+        default: {
+          let update = false;
+          this.model.traverse( ( object ) => {
+            if ( !update && object.material && _isToon(object.material)){
+                update = true;
+              }
+          } );
+                    
+          this.model.traverse( ( object ) => {
+            if ( object.material && _isToon(object.material) ){
+              const name = object.material[0].name;
+              update && _setMaterial(name, 'toon', object.material[0]);
+
+              object.material = this.materials.basic[name];
+            } 
+          } );
+        }
+      }
+
+    }
     switch (quality) {
       case 1: {
         if (this.spriteMegaAvatarMesh){
@@ -2118,34 +2187,42 @@ class Avatar {
           this.spriteMegaAvatarMesh = avatarSpriter.createSpriteMegaMesh(skinnedMesh);
           scene.add(this.spriteMegaAvatarMesh);
         }
-        //
+        
         this.model.visible = false;
-        if (this.crunchedModel) this.crunchedModel.visible = false;
+        this.crunchedModel && (this.crunchedModel.visible = false);
         break;
       }
       case 2: {
         if (this.crunchedModel){
             this.crunchedModel.visible = true;
         }else{
+          await _swapMaterials(); //do we need this??
+          
           this.crunchedModel = avatarCruncher.crunchAvatarModel(this.model);
           this.crunchedModel.frustumCulled = false;
           scene.add(this.crunchedModel);
         }
 
-        if (this.spriteMegaAvatarMesh) this.spriteMegaAvatarMesh.visible = false;
+        this.spriteMegaAvatarMesh && (this.spriteMegaAvatarMesh.visible = false);
         this.model.visible = false;
         break;
       }
       case 3: {
-        console.log('not implemented'); // XXX
+        await _swapMaterials();
+
+        this.model.visible = true;
+        this.spriteMegaAvatarMesh && (this.spriteMegaAvatarMesh.visible = false);
+        this.crunchedModel && (this.crunchedModel.visible = false);
+
         break;
       }
       case 4: {
-        this.model.visible = true;
-        if (this.spriteMegaAvatarMesh) this.spriteMegaAvatarMesh.visible = false;
-        if (this.crunchedModel) this.crunchedModel.visible = false;
+        await _swapMaterials("toon");
 
-        console.log('not implemented', this); // XXX
+        this.model.visible = true;
+        this.spriteMegaAvatarMesh && (this.spriteMegaAvatarMesh.visible = false);
+        this.crunchedModel && (this.crunchedModel.visible = false);
+
         break;
       }
       default: {
