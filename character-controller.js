@@ -1097,7 +1097,7 @@ class NpcPlayer extends StaticUninterpolatedPlayer {
       debug: false,
     });
     console.log("MADE NPC AVATAR", avatar);
-    const quality = parseInt(localStorage.getItem('avatarStyle')) || 4;
+    const quality = metaversefile.getQualitySetting();
     avatar.setQuality(quality);
 
     unFrustumCull(app);

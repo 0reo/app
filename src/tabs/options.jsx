@@ -5,10 +5,11 @@ import styles from '../Header.module.css';
 import {Tab} from '../components/tab';
 import game from '../../game.js';
 import {defaultVoicePack, voiceEndpoint} from '../../constants.js';
+import metaversefile from '../../metaversefile-api.js';
 
 export const Options = ({app, open, toggleOpen, panelsRef}) => {
-  const [avatarStyle, setAvatarStyle] = useState(parseInt(localStorage.getItem('avatarStyle')));
-  const [avatarStyleCurrent, setAvatarStyleCurrent] = useState(parseInt(localStorage.getItem('avatarStyle')));
+  const [avatarStyle, setAvatarStyle] = useState(metaversefile.getQualitySetting());
+  const [avatarStyleCurrent, setAvatarStyleCurrent] = useState(metaversefile.getQualitySetting());
   const [voicePacks, setVoicePacks] = useState([]);
   const [voicePack, setVoicePack] = useState('0');
   const [voicePackCurrent, setVoicePackCurrent] = useState(voicePack);
@@ -80,7 +81,6 @@ export const Options = ({app, open, toggleOpen, panelsRef}) => {
           {(avatarStyle !== avatarStyleCurrent) ? (
             <button className={classnames(styles.big, styles['mint-button'])} onClick={e => {
               game.setAvatarQuality(avatarStyle);
-              localStorage.setItem('avatarStyle', avatarStyle);
               setAvatarStyleCurrent(avatarStyle);
             }}>
               <div className={styles['button-background']} />
@@ -100,7 +100,7 @@ export const Options = ({app, open, toggleOpen, panelsRef}) => {
           {(voicePack !== voicePackCurrent) ? (
             <button className={classnames(styles.big, styles['mint-button'])} onClick={e => {
               const vp = voicePacks[voicePack];
-              
+
               if (typeof vp.drive_id === 'string') {
                 game.setVoiceEndpoint(voiceEndpoint, vp.drive_id);
               } else if (typeof vp.audioUrl === 'string' || typeof vp.indexUrl === 'string') {

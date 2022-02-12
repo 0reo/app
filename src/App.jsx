@@ -21,9 +21,9 @@ const _startApp = async (weba, canvas) => {
 
   const gpuTier = await getGPUTier();
   console.log("GPU INFO", gpuTier);
-  if (!localStorage.getItem('avatarStyle')){
+  if (!metaversefileApi.getQualitySetting()){
     console.log("setting default quality to ", gpuTier.tier);
-    localStorage.setItem('avatarStyle', gpuTier.tier);
+    metaversefileApi.setQualitySetting(gpuTier.tier)
   }
 
   weba.setContentLoaded();

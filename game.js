@@ -1959,6 +1959,7 @@ const gameManager = {
     localPlayer.removeAction('activate');
   },
   setAvatarQuality(quality) {
+    metaversefileApi.setQualitySetting(quality);
     const localPlayer = metaversefileApi.useLocalPlayer();
     const npcs = metaversefileApi.useNpcs()
     localPlayer.avatar.setQuality(quality);

@@ -79,12 +79,11 @@ export function makeAvatar(app) {
       });
       avatar[appSymbol] = app;
 
-      const quality = parseInt(localStorage.getItem('avatarStyle')) || 4;
+      const quality = metaversefile.getQualitySetting();
       avatar.setQuality(quality).then(()=>{
         const am = metaversefile.useLocalPlayer().appManager;
         const trackedApp = am.getTrackedApp(app.instanceId);
         trackedApp.set('load', true);
-        console.log("PLAYER AVATAR", trackedApp.get('load'));
       })
 /*
        (async () => {

@@ -869,6 +869,12 @@ export default () => {
   getAvatarHeight(obj) {
     return getHeight(obj);
   },
+  getQualitySetting(){
+    return parseInt(localStorage.getItem('avatarStyle') || 0);
+  },
+  setQualitySetting(quality){
+    localStorage.setItem('avatarStyle', quality);
+  },
   useInternals() {
     if (!iframeContainer) {
       iframeContainer = document.getElementById('iframe-container');
