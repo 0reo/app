@@ -2111,8 +2111,12 @@ class Avatar {
     );
     return localEuler.y;
   }
+  
+  getModel(quality = metaversefile.getQualitySetting()){
+    return quality == 1 ? this.spriteMegaAvatarMesh : quality == 2 ? this.crunchedModel : this.model;
+  }
+  
   async setQuality(quality) {
-    
     const _swapMaterials = async (type) => {
       
       const _isToon = material => material[0] && material[0].isMToonMaterial;
@@ -2176,12 +2180,15 @@ class Avatar {
           } );
         }
       }
-
     }
+
+    !this.app.getObjectById(this.getModel().id) && this.app.add(this.getModel());
+
     switch (quality) {
       case 1: {
+        
         if (this.spriteMegaAvatarMesh){
-          this.spriteMegaAvatarMesh.visible = true;
+          this.getModel().visible = true;
         } else {
           const skinnedMesh = await this.object.cloneVrm();
           this.spriteMegaAvatarMesh = avatarSpriter.createSpriteMegaMesh(skinnedMesh);
@@ -2194,7 +2201,7 @@ class Avatar {
       }
       case 2: {
         if (this.crunchedModel){
-            this.crunchedModel.visible = true;
+          this.getModel().visible = true;
         }else{
           await _swapMaterials(); //do we need this??
           
@@ -2210,7 +2217,7 @@ class Avatar {
       case 3: {
         await _swapMaterials();
 
-        this.model.visible = true;
+        this.getModel().visible = true;
         this.spriteMegaAvatarMesh && (this.spriteMegaAvatarMesh.visible = false);
         this.crunchedModel && (this.crunchedModel.visible = false);
 
@@ -2219,7 +2226,7 @@ class Avatar {
       case 4: {
         await _swapMaterials("toon");
 
-        this.model.visible = true;
+        this.getModel().visible = true;
         this.spriteMegaAvatarMesh && (this.spriteMegaAvatarMesh.visible = false);
         this.crunchedModel && (this.crunchedModel.visible = false);
 
@@ -2229,6 +2236,7 @@ class Avatar {
         throw new Error('unknown avatar quality: ' + quality);
       }
     }
+    console.log("set wuality", scene.children, this.app.getObjectById(this.getModel().id), this.getModel());
   }
   update(timestamp, timeDiff) {
     const now = timestamp;
@@ -3034,7 +3042,7 @@ class Avatar {
 
       const modelScaleFactor = this.sdkInputs.hmd.scaleFactor;
       if (modelScaleFactor !== this.lastModelScaleFactor) {
-        this.model.scale.set(modelScaleFactor, modelScaleFactor, modelScaleFactor);
+        this.getModel().scale.set(modelScaleFactor, modelScaleFactor, modelScaleFactor);
         this.lastModelScaleFactor = modelScaleFactor;
 
         this.springBoneManager && this.springBoneManager.springBoneGroupList.forEach(springBoneGroup => {

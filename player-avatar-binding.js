@@ -80,10 +80,12 @@ export function makeAvatar(app) {
       avatar[appSymbol] = app;
 
       const quality = metaversefile.getQualitySetting();
+      avatar.getModel().visible = false;
+      
+      const am = metaversefile.useLocalPlayer().appManager;
+      const trackedApp = am.getTrackedApp(app.instanceId);
+      trackedApp.set('load', true);
       avatar.setQuality(quality).then(()=>{
-        const am = metaversefile.useLocalPlayer().appManager;
-        const trackedApp = am.getTrackedApp(app.instanceId);
-        trackedApp.set('load', true);
       })
 /*
        (async () => {
@@ -99,10 +101,9 @@ export function makeAvatar(app) {
          console.log("ASYNC DONE");
       })();
 */
-
       unFrustumCull(app);
       enableShadows(app);
-
+console.log("Made player", avatar);
       return avatar;
     }
   }
@@ -285,11 +286,13 @@ export async function switchAvatar(oldAvatar, newApp) {
   const promises = [];
   if (oldAvatar) {
     promises.push((async () => {
+      console.log("old avatar, unskinning before skinning");
       await oldAvatar[appSymbol].setSkinning(false);
     })());
   }
   if (newApp) {
     promises.push((async () => {
+      console.log("new avatar, skinning");
       await newApp.setSkinning(true);
 
       // unwear old rig

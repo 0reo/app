@@ -14,7 +14,7 @@
     "serve": "vite preview",
     "setup:test": "cd test && npm i",
     "test": "cd test && npm run test",
-    "watch": "watch 'npm run restart' ./packages/totum"
+    "watch": "watch 'npm run restart' ./packages"
   },
   "dependencies": {
     "@3id/connect": "^0.2.5",

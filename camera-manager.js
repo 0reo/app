@@ -6,7 +6,7 @@ import physicsManager from './physics-manager.js';
 
 const localVector = new THREE.Vector3();
 
-const cameraOffset = new THREE.Vector3();
+const cameraOffset = new THREE.Vector3(0, 0, -5);
 let cameraOffsetTargetZ = cameraOffset.z;
 
 let cameraOffsetZ = cameraOffset.z;
