@@ -69,24 +69,30 @@ export function applyPlayerModesToAvatar(player, session, rig) {
 }
 export function makeAvatar(app) {
   if (app) {
-    const {skinnedVrm} = app;
-    if (skinnedVrm) {
-      const avatar = new Avatar(skinnedVrm, {
+    const {skinnedVrms} = app;
+    if (skinnedVrms && skinnedVrms['active']) {
+      const avatar = new Avatar(skinnedVrms, {
         fingers: true,
         hair: true,
         visemes: true,
         debug: false,
       });
-      avatar[appSymbol] = app;
 
-      const quality = metaversefile.getQualitySetting();
-      avatar.getModel().visible = false;
-      
-      const am = metaversefile.useLocalPlayer().appManager;
-      const trackedApp = am.getTrackedApp(app.instanceId);
-      trackedApp.set('load', true);
-      avatar.setQuality(quality).then(()=>{
-      })
+      // Avatar.waitForLoad().then(()=>{
+        avatar[appSymbol] = app;
+
+        const quality = metaversefile.getQualitySetting();
+        // avatar.getModel().visible = false;
+        
+        const am = metaversefile.useLocalPlayer().appManager;
+        const trackedApp = am.getTrackedApp(app.instanceId);
+        // trackedApp.set('load', true);
+        // avatar.setQuality(quality).then(()=>{
+        // })
+      // })
+
+
+
 /*
        (async () => {
          // await Avatar.waitForLoad();
@@ -284,16 +290,11 @@ export function applyPlayerToAvatar(player, session, rig, mirrors) {
 export async function switchAvatar(oldAvatar, newApp) {
   let result;
   const promises = [];
-  if (oldAvatar) {
-    promises.push((async () => {
-      console.log("old avatar, unskinning before skinning");
-      await oldAvatar[appSymbol].setSkinning(false);
-    })());
-  }
+
   if (newApp) {
     promises.push((async () => {
-      console.log("new avatar, skinning");
-      await newApp.setSkinning(true);
+      // console.log("new avatar, skinning");
+      // await newApp.setSkinning(true);
 
       // unwear old rig
 

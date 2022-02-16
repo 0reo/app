@@ -1119,7 +1119,7 @@ class Avatar {
       };
     }
     
-    this.object = object;
+    this.object = object.active ? object.active : object;
     const model = (() => {
       let o = object;
       if (o && !o.isMesh) {
@@ -1168,7 +1168,7 @@ class Avatar {
       armatureQuaternion,
       armatureMatrixInverse,
       // retargetedAnimations,
-    } = Avatar.bindAvatar(object);
+    } = Avatar.bindAvatar(this.object);
     this.skinnedMeshes = skinnedMeshes;
     this.skeleton = skeleton;
     this.modelBones = modelBones;
@@ -1180,8 +1180,8 @@ class Avatar {
     this.vowels = Float32Array.from([1, 0, 0, 0, 0]);
     this.poseAnimation = null;
 
-    this.spriteMegaAvatarMesh = object.spriteMegaAvatarMesh || null;
-    this.crunchedModel = null;
+    this.spriteMegaAvatarMesh = object.sprite && object.sprite || null;
+    this.crunchedModel = object.crunch && object.crunch.scene || null;
 
     modelBones.Root.traverse(o => {
       o.savedPosition = o.position.clone();
@@ -1277,11 +1277,11 @@ class Avatar {
     let springBoneManagerPromise = null;
     if (options.hair) {
       new Promise((accept, reject) => {
-        /* if (!object.parser.json.extensions) {
-          object.parser.json.extensions = {};
+        /* if (!this.object.parser.json.extensions) {
+          this.object.parser.json.extensions = {};
         }
-        if (!object.parser.json.extensions.VRM) {
-          object.parser.json.extensions.VRM = {
+        if (!this.object.parser.json.extensions.VRM) {
+          this.object.parser.json.extensions.VRM = {
             secondaryAnimation: {
               boneGroups: this.hairBones.map(hairBone => {
                 const boneIndices = [];
@@ -1310,7 +1310,7 @@ class Avatar {
               }),
             },
           };
-          object.parser.getDependency = async (type, nodeIndex) => {
+          this.object.parser.getDependency = async (type, nodeIndex) => {
             if (type === 'node') {
               return this.allHairBones[nodeIndex];
             } else {
@@ -1319,7 +1319,7 @@ class Avatar {
           };
         } */
 
-        springBoneManagerPromise = new VRMSpringBoneImporter().import(object)
+        springBoneManagerPromise = new VRMSpringBoneImporter().import(this.object)
           .then(springBoneManager => {
             this.springBoneManager = springBoneManager;
           });
@@ -1393,7 +1393,7 @@ class Avatar {
     });
 
     // height is defined as eyes to root
-    this.height = getHeight(object);
+    this.height = getHeight(this.object);
     this.shoulderWidth = modelBones.Left_arm.getWorldPosition(new THREE.Vector3()).distanceTo(modelBones.Right_arm.getWorldPosition(new THREE.Vector3()));
     this.leftArmLength = this.shoulderTransforms.leftArm.armLength;
     this.rightArmLength = this.shoulderTransforms.rightArm.armLength;
@@ -2182,7 +2182,7 @@ class Avatar {
       }
     }
 
-    !this.app.getObjectById(this.getModel().id) && this.app.add(this.getModel());
+    !this.app.getObjectById(this.getModel() && this.getModel().id) && this.app.add(this.getModel());
 
     switch (quality) {
       case 1: {
