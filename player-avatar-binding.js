@@ -86,7 +86,7 @@ export function makeAvatar(app) {
         
         const am = metaversefile.useLocalPlayer().appManager;
         const trackedApp = am.getTrackedApp(app.instanceId);
-        // trackedApp.set('load', true);
+        trackedApp.set('load', true);
         // avatar.setQuality(quality).then(()=>{
         // })
       // })
