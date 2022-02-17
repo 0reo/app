@@ -1119,9 +1119,10 @@ class Avatar {
       };
     }
     
-    this.object = object.active ? object.active : object;
+    this.object = object.active ? object.sprite ? object.base : object.active : object;
+    // this.object = object.base ? object.base : object;
     const model = (() => {
-      let o = object;
+      let o = this.object;
       if (o && !o.isMesh) {
         o = o.scene;
       }
@@ -1149,7 +1150,7 @@ class Avatar {
     this.options = options;
     this.materials = {
       toon:{},
-      basic:{}
+      base:{}
     };
     
     this.vrmExtension = object?.parser?.json?.extensions?.VRM;
@@ -1180,7 +1181,7 @@ class Avatar {
     this.vowels = Float32Array.from([1, 0, 0, 0, 0]);
     this.poseAnimation = null;
 
-    this.spriteMegaAvatarMesh = object.sprite && object.sprite || null;
+    this.spriteMegaAvatarMesh = object.sprite && object.sprite.scene || null;
     this.crunchedModel = object.crunch && object.crunch.scene || null;
 
     modelBones.Root.traverse(o => {
@@ -1701,7 +1702,32 @@ class Avatar {
     this.startEyeTargetQuaternion = new THREE.Quaternion();
     this.lastNeedsEyeTarget = false;
     this.lastEyeTargetTime = -Infinity;
+
+
+
+      object.base && object.base.scene.traverse((o) => {
+        if (o.material && this._isBasic(o.material)) {
+          const name = o.material.name;
+          this._setMaterial(name, 'base', o.material);
+      }
+
+      });
+      object.toon && object.toon.scene.traverse((o) => {
+        if (o.material && this._isToon(o.material)) {
+          const name = o.material[0].name;
+          this._setMaterial(name, 'toon', o.material[0]);
+
+        }
+      });
   }
+
+  _isToon = material => material[0] && material[0].isMToonMaterial;
+  _isBasic = material => material.type == "MeshBasicMaterial" && material.name; //we're only changing named materials
+  _setMaterial = (name, type, material) => this.materials[type][name] = material;
+
+  //make sure we have materials to work with
+
+
   static bindAvatar(object) {
     const model = object.scene;
     model.updateMatrixWorld(true);
@@ -2117,45 +2143,23 @@ class Avatar {
   }
   
   async setQuality(quality) {
-    const _swapMaterials = async (type) => {
-      
-      const _isToon = material => material[0] && material[0].isMToonMaterial;
-      const _isBasic = material => material.type == "MeshBasicMaterial" && material.name; //we're only changing named materials
-      const _setMaterial = (name, type, material) => this.materials[type][name] = material;
-
-      //make sure we have materials to work with
-      const empty = Object.keys(this.materials.toon).length == 0 &&
-        Object.keys(this.materials.basic).length == 0;
-        
-      if (empty){
-        this.model.traverse( ( object ) => {
-          if ( object.material && _isBasic(object.material)){
-            const name = object.material.name;
-            _setMaterial(name, 'basic', object.material);
-          } else if ( object.material && _isToon(object.material)) {
-            const name = object.material[0].name;
-            _setMaterial(name, 'toon', object.material[0]);
-        
-          }
-        
-        } );      
-      }
+    const _swapMaterials = async (type, avatar = this) => {
       
       //actually swap
       switch (type) {
         case "toon": {
-          let update = Object.keys(this.materials.toon).length > 0;
+          let update = Object.keys(avatar.materials.toon).length > 0;
           if(!update){
-            this.model.visable = false;
-            await this.object.toonShaderify(this.object);
-            this.model.visable = true;
+            avatar.model.visable = false;
+            await avatar.object.toonShaderify(avatar.object);
+            avatar.model.visable = true;
           } 
 
-          this.model.traverse( ( object ) => {
-            if ( object.material && _isBasic(object.material) ){
+          avatar.model.traverse( ( object ) => {
+            if ( object.material && this._isBasic(object.material) ){
                 const name = object.material.name;
-                _setMaterial(name, 'basic', object.material);
-                update && (object.material = [this.materials.toon[name]]);
+                this._setMaterial(name, 'base', object.material);
+                update && (object.material = [avatar.materials.toon[name]]);
               }
             
           } );          
@@ -2164,31 +2168,33 @@ class Avatar {
         }
         default: {
           let update = false;
-          this.model.traverse( ( object ) => {
-            if ( !update && object.material && _isToon(object.material)){
+          avatar.model.traverse( ( object ) => {
+            if ( !update && object.material && this._isToon(object.material)){
                 update = true;
               }
           } );
                     
-          this.model.traverse( ( object ) => {
-            if ( object.material && _isToon(object.material) ){
+          avatar.model.traverse( ( object ) => {
+            if ( object.material && this._isToon(object.material) ){
               const name = object.material[0].name;
-              update && _setMaterial(name, 'toon', object.material[0]);
+              update && this._setMaterial(name, 'toon', object.material[0]);
 
-              object.material = this.materials.basic[name];
+              object.material = avatar.materials.base[name];
             } 
           } );
         }
       }
     }
 
-    !this.app.getObjectById(this.getModel() && this.getModel().id) && this.app.add(this.getModel());
+    //add model if it's not added yet
+    this.getModel() && !this.app.getObjectById( this.getModel().id) && this.app.add(this.getModel());
 
     switch (quality) {
       case 1: {
         
         if (this.spriteMegaAvatarMesh){
-          this.getModel().visible = true;
+          // this.getModel().visible = true;
+
         } else {
           const skinnedMesh = await this.object.cloneVrm();
           this.spriteMegaAvatarMesh = avatarSpriter.createSpriteMegaMesh(skinnedMesh);
@@ -2202,8 +2208,9 @@ class Avatar {
       case 2: {
         if (this.crunchedModel){
           this.getModel().visible = true;
+          // console.log(this.getModel().visible);
         }else{
-          await _swapMaterials(); //do we need this??
+          // await _swapMaterials( ); //do we need this??
           
           this.crunchedModel = avatarCruncher.crunchAvatarModel(this.model);
           this.crunchedModel.frustumCulled = false;
@@ -2217,7 +2224,7 @@ class Avatar {
       case 3: {
         await _swapMaterials();
 
-        this.getModel().visible = true;
+        // this.getModel().visible = true;
         this.spriteMegaAvatarMesh && (this.spriteMegaAvatarMesh.visible = false);
         this.crunchedModel && (this.crunchedModel.visible = false);
 
@@ -2226,7 +2233,7 @@ class Avatar {
       case 4: {
         await _swapMaterials("toon");
 
-        this.getModel().visible = true;
+
         this.spriteMegaAvatarMesh && (this.spriteMegaAvatarMesh.visible = false);
         this.crunchedModel && (this.crunchedModel.visible = false);
 
@@ -2236,6 +2243,7 @@ class Avatar {
         throw new Error('unknown avatar quality: ' + quality);
       }
     }
+    this.getModel().visible = true;
     console.log("set wuality", scene.children, this.app.getObjectById(this.getModel().id), this.getModel());
   }
   update(timestamp, timeDiff) {
